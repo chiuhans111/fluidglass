@@ -1,0 +1,25 @@
+{
+  "name": "fluidglass",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "ogl": "^1.0.11",
+    "vue": "^3.5.18"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.1",
+    "sass-embedded": "^1.93.2",
+    "vite": "^7.0.6",
+    "vite-plugin-glsl": "^1.5.1",
+    "vite-plugin-vue-devtools": "^8.0.0"
+  }
+}
