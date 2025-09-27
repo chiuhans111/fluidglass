@@ -1,21 +1,16 @@
 precision highp float;
 
 uniform sampler2D textureMap;
-
-
-uniform bool unpack;
+uniform bool showAlpha;
 
 varying vec2 vUv;
 
 #include ./util.glsl
 
 void main() {
-    
     gl_FragColor = texture2D(textureMap, vUv);
-
-    if (unpack){
-        gl_FragColor.rg = unpackField(gl_FragColor)*0.5+0.5;
-        gl_FragColor.b = 0.5;
-        gl_FragColor.a = 1.0;
+    gl_FragColor = gl_FragColor * gl_FragColor.a;
+    if(showAlpha) {
+        gl_FragColor.rgb = gl_FragColor.aaa;
     }
 }

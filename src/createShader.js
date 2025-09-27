@@ -27,7 +27,8 @@ function createShader(
         mesh.program = program
         for (const key in uniforms)
             mesh.program.uniforms[key].value = uniforms[key]
-        renderer.render({ scene: mesh, target });
+        if (target) renderer.render({ scene: mesh, target });
+        else renderer.render({ scene: mesh })
     }
 }
 

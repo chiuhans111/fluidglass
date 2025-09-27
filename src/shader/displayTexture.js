@@ -5,9 +5,9 @@ import fragment from './displayTexture.frag'
 const shader = createShader(
     vertex, fragment, {
     textureMap: { value: 0 },
-    unpack: { value: false }
+    showAlpha: { value: false },
 })
 
-export default function (target, textureMap, unpack=false) {
-    shader(target, { textureMap, unpack })
+export default function (target, textureMap, showAlpha) {
+    shader(target, { textureMap, showAlpha })
 }
