@@ -11,7 +11,7 @@ uniform vec2 uSize;
 #include ./util.glsl
 
 void main() {
-    vec2 delta = 3.0 / uSize;
+    vec2 delta = 2.0 / uSize;
 
     vec2 velocity = unpackField(texture2D(velocityMap, vUv));
     vec2 velocity_left = unpackField(texture2D(velocityMap, vUv + delta * vec2(-1, 0)));
@@ -28,14 +28,16 @@ void main() {
     float bottom = texture2D(pressureMap, vUv + delta * vec2(0, -1)).a;
     vec2 gradient = vec2(right - left, top - bottom);
 
-    vec2 acceleration = -gradient / (center + 0.1) * 1.0;
+    vec2 diffusion = (velocity_left + velocity_right + velocity_bottom + velocity_top) / 4.0 - velocity;
 
-    // surface tension?
-    float normalization_factor = sqrt(gradient.x * gradient.x + gradient.y * gradient.y + 1.0);
-    vec2 surface_tension = (gradient / normalization_factor) * (center + 1.0) * 1.0;
+    vec2 acceleration = gradient * 0.00001;
 
-    velocity = velocity * 0.6 + (velocity_left + velocity_right + velocity_bottom + velocity_top) * 0.1;
-    velocity = velocity * 0.9999 + acceleration + flow;
+    // // surface tension?
+    // float normalization_factor = sqrt(gradient.x * gradient.x + gradient.y * gradient.y + 1.0);
+    // vec2 surface_tension = (gradient / normalization_factor) * (center + 1.0) * 1.0;
+
+    // diffusion
+    velocity = velocity * 0.999 + acceleration / (center + 0.001) + diffusion + flow;
 
     gl_FragColor = packField(velocity);
 }

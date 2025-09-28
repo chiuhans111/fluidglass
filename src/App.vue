@@ -9,14 +9,16 @@ import advection from "./shader/advection";
 import velocityToPresure from "./shader/velocityToPresure";
 import velocityCorrection from "./shader/velocityCorrection";
 import fluidVelocity from "./shader/fluidVelocity";
+import reactionDiffusion from "./shader/reactionDiffusion";
 
 /**@type {HTMLElement} */
 let appRoot;
 
-const renderTargets = [renderer];
+const renderTargets = [];
+const renderTargets_delayed_set_size = [];
 
-function createRenderTarget() {
-  const texture = new RenderTarget(gl, {
+function createRenderTarget(delayed_set_size = false) {
+  const target = new RenderTarget(gl, {
     width: 512,
     height: 512,
     type: gl.HALF_FLOAT,
@@ -26,30 +28,35 @@ function createRenderTarget() {
     wrapS: gl.REPEAT,
     wrapT: gl.REPEAT,
   });
-  renderTargets.push(texture);
-  return texture;
+  if (delayed_set_size) {
+    renderTargets_delayed_set_size.push(target);
+  } else {
+    renderTargets.push(target);
+  }
+  return target;
 }
 
 async function initOGL() {
   appRoot = document.getElementById("ogl-canvas-root");
   appRoot.appendChild(gl.canvas);
-
+  let set_size_needed = true;
   let pressure = createRenderTarget();
-  let pressure_temp = createRenderTarget();
+  let pressure_temp = createRenderTarget(true);
   let velocity = createRenderTarget();
-  let velocity_temp = createRenderTarget();
+  let velocity_temp = createRenderTarget(true);
 
   const flowmap = new Flowmap(gl, {
-    size: 256,
+    size: 512,
     falloff: 0.1,
-    alpha: 1,
-    dissipation: 0.9,
+    alpha: 0.01,
+    dissipation: 0.5,
   });
 
   // Listeners
   function resize() {
     const rect = appRoot.getBoundingClientRect();
-    for (let target of renderTargets) target.setSize(rect.width, rect.height);
+    renderer.setSize(rect.width, rect.height);
+    set_size_needed = true;
   }
   window.addEventListener("resize", resize);
 
@@ -62,7 +69,7 @@ async function initOGL() {
       (e.x - rect.left) / rect.width,
       (rect.height - e.y) / rect.height
     );
-    flowmap.velocity.set(e.movementX / 50, e.movementY / 50);
+    flowmap.velocity.set(e.movementX, e.movementY);
   }
 
   window.addEventListener("mousemove", mousemove);
@@ -75,38 +82,50 @@ async function initOGL() {
   function update(t) {
     requestAnimationFrame(update);
     flowmap.update();
+
+    if (set_size_needed) {
+      set_size_needed = false;
+      displayTexture(pressure_temp, pressure.texture, false);
+      displayTexture(velocity_temp, velocity.texture, false);
+
+      for (let target of renderTargets)
+        target.setSize(renderer.width, renderer.height);
+
+      displayTexture(pressure, pressure_temp.texture, false);
+      displayTexture(velocity, velocity_temp.texture, false);
+
+      for (let target of renderTargets_delayed_set_size)
+        target.setSize(renderer.width, renderer.height);
+    }
+
     // displayTexture(null, flowmap.mask.read.texture);
     // render pipeline
     // uvTexture(velocity);
-    for (let i = 0; i < 10; i++) {
-      fluidVelocity(
-        velocity_temp,
-        pressure.texture,
-        velocity.texture,
-        flowmap.mask.read.texture
-      );
 
+    fluidVelocity(
+      velocity_temp,
+      pressure.texture,
+      velocity.texture,
+      flowmap.mask.read.texture
+    );
+
+    for (let i = 0; i < 10; i++) {
       velocityToPresure(pressure_temp, velocity_temp.texture);
       velocityCorrection(
         velocity,
         pressure_temp.texture,
         velocity_temp.texture
       );
-
       advection(velocity_temp, velocity.texture, velocity.texture);
       advection(pressure_temp, pressure.texture, velocity.texture);
-
-      temp = pressure_temp;
-      pressure_temp = pressure;
-      pressure = temp;
-
-      temp = velocity_temp;
-      velocity_temp = velocity;
-      velocity = temp;
+      reactionDiffusion(pressure, pressure_temp.texture);
+      reactionDiffusion(pressure_temp, pressure.texture);
+      reactionDiffusion(pressure, pressure_temp.texture);
     }
+    displayTexture(velocity, velocity_temp.texture, false);
 
-    displayTexture(null, pressure.texture, false);
-    // displayTexture(null, velocity.texture, true);
+    displayTexture(null, pressure.texture, true);
+    // displayTexture(null, velocity.texture, false);
   }
   requestAnimationFrame(update);
 }

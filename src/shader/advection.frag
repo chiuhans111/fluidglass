@@ -19,6 +19,8 @@ void main() {
 
     // vec2 displacement = -(velocity.x + vec2(velocity_right.x, velocity_top.y)) * 0.5;
     vec2 displacement = -velocity;
-    gl_FragColor = texture2D(inputMap, vUv) * 0.9 + texture2D(inputMap, vUv + displacement * delta * 0.1) * 0.1;
+    float factor = 0.5;
+    vec4 displaced = texture2D(inputMap, vUv + displacement * delta * 0.5);
+    gl_FragColor = texture2D(inputMap, vUv) * (1.0 - factor) + displaced * factor;
 
 }

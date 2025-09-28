@@ -10,8 +10,8 @@ void main() {
     // gl_FragColor.b = 0.5;
     // gl_FragColor.a = 0.5;
 
-    gl_FragColor.rg = vUv;
-    gl_FragColor.b = 0.5;
-    gl_FragColor = gl_FragColor / max(gl_FragColor.z, max(gl_FragColor.x, gl_FragColor.y));
-    gl_FragColor.a = (sin(vUv.x * PI * 10.0) * sin(vUv.y * PI * 10.0)) * 0.5 + 0.5;
+    gl_FragColor.rgb = vec3(0.0);
+    // gl_FragColor.rgb = vUv.xyy;
+    // gl_FragColor.gb = vec2(step(vUv.y, 0.5));
+    gl_FragColor.a = 1.0;
 }
