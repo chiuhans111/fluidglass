@@ -64,8 +64,8 @@ void main() {
 
             vec4 background_T = texture2D(backgroundMap, uv + refracted.xy / refracted.z * 0.5);
 
-            float light = abs(dot(reflected, vec3(-0.1, 0.6, 0.01))) * 8.0;
-            light = step(0.2, light) * light;
+            float light = abs(dot(reflected, vec3(-0.1, 0.6, 0.01)));
+            light = step(0.1, light) * light * 10.0;
             vec4 background_R = vec4(vec3(light), 0);
 
             float R = pow(1.0 - dot(incoming, normal), 0.5) * thickness(center);
