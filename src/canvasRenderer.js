@@ -4,7 +4,7 @@ const canvas = document.createElement('canvas')
 const ctx = canvas.getContext('2d')
 
 let texture = undefined
-document.body.append(canvas)
+// document.body.append(canvas)
 /**
  * 
  * @param {RenderTarget} target 

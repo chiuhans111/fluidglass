@@ -48,6 +48,45 @@ function resize() {
   set_size_needed = true;
 }
 
+function renderForeground(canvas, ctx) {
+  ctx.fillStyle = "red";
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  const now = new Date();
+  if (canvas.width > canvas.height * 1.5) {
+    const size = canvas.width / 6;
+    ctx.font = Math.round(size) + "px Roboto Mono";
+
+    const timestr = [
+      now.getHours().toString().padStart(2, "0"),
+      now.getMinutes().toString().padStart(2, "0"),
+      now.getSeconds().toString().padStart(2, "0"),
+      // ].join(":");
+    ].join(now.getMilliseconds() < 500 ? ":" : " ");
+    ctx.fillText(timestr, canvas.width / 2, canvas.height / 2);
+  } else {
+    const size = canvas.height / 4;
+    ctx.font = Math.round(size) + "px Roboto Mono";
+    ctx.fillText(
+      now.getHours().toString().padStart(2, "0"),
+      canvas.width / 2,
+      canvas.height / 2 - size
+    );
+    ctx.fillText(
+      now.getMinutes().toString().padStart(2, "0"),
+      canvas.width / 2,
+      canvas.height / 2
+    );
+    ctx.fillText(
+      now.getSeconds().toString().padStart(2, "0"),
+      canvas.width / 2,
+      canvas.height / 2 + size
+    );
+  }
+}
+
 let alive = true;
 async function initOGL() {
   appRoot = document.getElementById("ogl-canvas-root");
@@ -79,6 +118,27 @@ async function initOGL() {
     flowmap.velocity.set(e.movementX, e.movementY);
   }
 
+  function touchmove(e) {
+    if (!e.touches || e.touches.length === 0) return;
+    const touch = e.touches[0];
+    const rect = appRoot.getBoundingClientRect();
+    e.preventDefault();
+    flowmap.mouse.set(
+      (touch.clientX - 0) / rect.width,
+      (rect.bottom - touch.clientY) / rect.height
+    );
+    // Approximate movement by comparing with previous position
+    if (!touchmove.prev)
+      touchmove.prev = { x: touch.clientX, y: touch.clientY };
+    flowmap.velocity.set(
+      (touch.clientX - touchmove.prev.x) * window.devicePixelRatio,
+      (touch.clientY - touchmove.prev.y) * window.devicePixelRatio
+    );
+    touchmove.prev.x = touch.clientX;
+    touchmove.prev.y = touch.clientY;
+  }
+  window.addEventListener("touchmove", touchmove, { passive: false });
+
   window.addEventListener("mousemove", mousemove);
   resize();
   // Main initialization
@@ -96,14 +156,21 @@ async function initOGL() {
       displayTexture(pressure_temp, pressure.texture, false);
       displayTexture(velocity_temp, velocity.texture, false);
 
-      for (let target of renderTargets)
-        target.setSize(renderer.width, renderer.height);
+      const scale = Math.min(
+        1.0,
+        1024 / Math.max(renderer.width, renderer.height)
+      );
+
+      const width = Math.round(renderer.width * scale);
+      const height = Math.round(renderer.height * scale);
+
+      for (let target of renderTargets) target.setSize(width, height);
 
       displayTexture(pressure, pressure_temp.texture, false);
       displayTexture(velocity, velocity_temp.texture, false);
 
       for (let target of renderTargets_delayed_set_size)
-        target.setSize(renderer.width, renderer.height);
+        target.setSize(width, height);
     }
 
     fluidVelocity(
@@ -113,23 +180,9 @@ async function initOGL() {
       flowmap.mask.read.texture
     );
 
-    const maskTexture = canvasRenderer(pressure, function (canvas, ctx) {
-      ctx.fillStyle = "red";
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle"
-      ctx.font = "256px Roboto Mono";
-      const now = new Date();
-      const timestr = [
-        now.getHours().toString().padStart(2, "0"),
-        now.getMinutes().toString().padStart(2, "0"),
-        now.getSeconds().toString().padStart(2, "0"),
-      ].join(":");
-      // ].join(now.getMilliseconds() < 500 ? ":" : " ");
-      ctx.fillText(timestr, canvas.width / 2, canvas.height / 2);
-    });
+    const maskTexture = canvasRenderer(renderer, renderForeground);
 
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 10; i++) {
       velocityToPresure(pressure_temp, velocity_temp.texture);
       velocityCorrection(
         velocity,
@@ -147,11 +200,9 @@ async function initOGL() {
     // displayTexture(null, pressure.texture, true);
     // displayTexture(null, velocity.texture, false);
 
-
     backgroundClock(background);
     glassShading(renderer, pressure.texture, background.texture);
     // displayTexture(null, background.texture, false);
-
   }
   requestAnimationFrame(update);
 }

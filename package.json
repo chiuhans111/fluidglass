@@ -7,9 +7,10 @@
     "node": "^20.19.0 || >=22.12.0"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "ogl": "^1.0.11",
@@ -17,6 +18,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.1",
+    "gh-pages": "^6.3.0",
     "sass-embedded": "^1.93.2",
     "vite": "^7.0.6",
     "vite-plugin-glsl": "^1.5.1",

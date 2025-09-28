@@ -29,7 +29,7 @@ vec3 my_refraction(vec3 normal, vec3 incoming, float n2) {
 }
 
 float thickness(vec4 p) {
-    return smoothstep(0.99, 0.2, p.a);
+    return smoothstep(0.4, 0.95, p.a);
 }
 
 void main() {
@@ -59,32 +59,28 @@ void main() {
 
             vec3 refracted = my_refraction(normal, incoming, n2);
             refracted = my_refraction(normal * vec3(-1, -1, 1.0), refracted, 1.0 / n2);
-
             vec3 reflected = my_reflection(normal, incoming);
 
-            vec4 background_T = texture2D(backgroundMap, uv + refracted.xy / refracted.z * 0.5);
+            float r_r = texture2D(backgroundMap, uv + refracted.xy / refracted.z * 1.0).r;
+            float r_g = texture2D(backgroundMap, uv + refracted.xy / refracted.z * 1.05).g;
+            float r_b = texture2D(backgroundMap, uv + refracted.xy / refracted.z * 1.1).b;
+
+            vec4 background_T = vec4(r_r, r_g, r_b, 1.0);
 
             float light = abs(dot(reflected, vec3(-0.1, 0.6, 0.01)));
-            light = step(0.1, light) * light * 10.0;
+            light = step(0.1, light) * light * 30.0;
             vec4 background_R = vec4(vec3(light), 0);
 
             float R = pow(1.0 - dot(incoming, normal), 0.5) * thickness(center);
 
-            vec4 color = background_R * R + background_T * (1.0 - R);
+            float shadow = thickness(texture2D(pressureMap, vUv + delta * vec2(0, 0)));
+            vec4 color = background_R * R + background_T * (1.0 - R) + ( shadow * 0.05);
 
             final_color = final_color + color * 0.25;
         }
     }
 
-    float shadow = 0.0;
-
-    for(int i = -1; i < 2; i += 1) {
-        for(int j = -1; j < 2; j += 1) {
-            shadow += thickness(texture2D(pressureMap, vUv + delta * vec2(i, j + 3) * 3.0)) / 9.0;
-        }
-    }
-
-    gl_FragColor = final_color * (1.0 - shadow * 0.2);
+    gl_FragColor = final_color;
     // gl_FragColor = vec4(thickness(cp.a,center));
     // gl_FragColor = vec4(R);
 }
