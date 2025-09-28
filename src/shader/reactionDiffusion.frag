@@ -3,6 +3,7 @@ precision highp float;
 varying vec2 vUv;
 
 uniform sampler2D pressureMap;
+uniform sampler2D maskTexture;
 
 uniform vec2 uSize;
 #include ./util.glsl
@@ -11,6 +12,8 @@ void main() {
     vec2 delta = 1.0 / uSize;
 
     vec4 center = texture2D(pressureMap, vUv);
+
+    vec4 maskInput = texture2D(maskTexture, vUv);
 
     vec4 left = texture2D(pressureMap, vUv + delta * vec2(-1, 0));
     vec4 right = texture2D(pressureMap, vUv + delta * vec2(1, 0));
@@ -24,22 +27,22 @@ void main() {
 
     vec4 laplacian = (left + right + bottom + top) * 0.2 + (corner1 + corner2 + corner3 + corner4) * 0.05 - center;
 
-    float feed = 0.065 + (vUv.x - 0.5) * 0.05;
+    float feed = 0.065 + (vUv.x - 0.5) * 0.06;
     float kill0 = 0.065 - 7.0 * (feed - 0.065) * (feed - 0.065);
 
     float r = length((vUv - 0.5) * uSize) / min(uSize.x, uSize.y);
-    float kill = kill0 + (r - 0.05) * 0.04 - 0.005;
+    float kill = kill0 - r * 0.05 + 0.025;
 
-    float mask = step(r, 0.05) * 0.035;
+    float mask = maskInput.r * 0.1;
 
-    vec3 diffusion = vec3(0.3, 0.1, 0.1) * 4.0;
+    vec3 diffusion = vec3(0.4, 0.15, 0.05) * 8.0;
     vec3 reaction = vec3(-1.0, 1.0, 1.0);
     vec3 balance = vec3(1.0, mask, mask);
     vec3 damping = vec3(feed, feed + kill, feed + kill);
-    vec3 density = vec3(1.0, 0.0, 0.0);
+    vec3 density = vec3(0.0, 1.0, 0.0);
 
     vec3 change = diffusion * laplacian.xyz + reaction * center.x * center.y * center.z + (balance - center.xyz) * damping;
-    vec3 result = center.xyz + change * 0.5;
+    vec3 result = center.xyz + change * 0.3;
     gl_FragColor.xyz = result.xyz;
     gl_FragColor.a = 1.0 - dot(density, result);
 

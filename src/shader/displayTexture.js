@@ -8,6 +8,6 @@ const shader = createShader(
     showAlpha: { value: false },
 })
 
-export default function (target, textureMap, showAlpha) {
+export default function (target, textureMap, showAlpha = false) {
     shader(target, { textureMap, showAlpha })
 }

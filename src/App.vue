@@ -10,6 +10,7 @@ import velocityToPresure from "./shader/velocityToPresure";
 import velocityCorrection from "./shader/velocityCorrection";
 import fluidVelocity from "./shader/fluidVelocity";
 import reactionDiffusion from "./shader/reactionDiffusion";
+import canvasRenderer from "./canvasRenderer";
 
 /**@type {HTMLElement} */
 let appRoot;
@@ -25,8 +26,9 @@ function createRenderTarget(delayed_set_size = false) {
     format: gl.RGBA,
     internalFormat: gl.RGBA16F,
     depth: false,
-    wrapS: gl.REPEAT,
-    wrapT: gl.REPEAT,
+    wrapS: gl.CLAMP_TO_EDGE,
+    wrapT: gl.CLAMP_TO_EDGE,
+    // wrapT: gl.REPEAT,
   });
   if (delayed_set_size) {
     renderTargets_delayed_set_size.push(target);
@@ -36,10 +38,18 @@ function createRenderTarget(delayed_set_size = false) {
   return target;
 }
 
+let set_size_needed = true;
+// Listeners
+function resize() {
+  const rect = appRoot.getBoundingClientRect();
+  renderer.setSize(rect.width, rect.height);
+  set_size_needed = true;
+}
+
+let alive = true;
 async function initOGL() {
   appRoot = document.getElementById("ogl-canvas-root");
   appRoot.appendChild(gl.canvas);
-  let set_size_needed = true;
   let pressure = createRenderTarget();
   let pressure_temp = createRenderTarget(true);
   let velocity = createRenderTarget();
@@ -48,16 +58,10 @@ async function initOGL() {
   const flowmap = new Flowmap(gl, {
     size: 512,
     falloff: 0.1,
-    alpha: 0.01,
+    alpha: 1,
     dissipation: 0.5,
   });
 
-  // Listeners
-  function resize() {
-    const rect = appRoot.getBoundingClientRect();
-    renderer.setSize(rect.width, rect.height);
-    set_size_needed = true;
-  }
   window.addEventListener("resize", resize);
 
   /**
@@ -66,8 +70,8 @@ async function initOGL() {
   function mousemove(e) {
     const rect = appRoot.getBoundingClientRect();
     flowmap.mouse.set(
-      (e.x - rect.left) / rect.width,
-      (rect.height - e.y) / rect.height
+      (e.x - 0) / rect.width,
+      (rect.bottom - e.y) / rect.height
     );
     flowmap.velocity.set(e.movementX, e.movementY);
   }
@@ -77,11 +81,12 @@ async function initOGL() {
   // Main initialization
   initializePressure(pressure);
 
-  let temp = null;
   // Rendering
   function update(t) {
-    requestAnimationFrame(update);
+    if (alive) requestAnimationFrame(update);
     flowmap.update();
+    // displayTexture(null, flowmap.mask);
+    // return
 
     if (set_size_needed) {
       set_size_needed = false;
@@ -98,16 +103,27 @@ async function initOGL() {
         target.setSize(renderer.width, renderer.height);
     }
 
-    // displayTexture(null, flowmap.mask.read.texture);
-    // render pipeline
-    // uvTexture(velocity);
-
     fluidVelocity(
       velocity_temp,
       pressure.texture,
       velocity.texture,
       flowmap.mask.read.texture
     );
+
+    const maskTexture = canvasRenderer(pressure, function (canvas, ctx) {
+      ctx.fillStyle = "red";
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.textAlign = "center";
+      ctx.font = "128px consolas";
+      const now = new Date();
+      const timestr = [
+        now.getHours().toString().padStart(2, "0"),
+        now.getMinutes().toString().padStart(2, "0"),
+        now.getSeconds().toString().padStart(2, "0"),
+      ].join(":");
+      // ].join(now.getMilliseconds() < 500 ? ":" : " ");
+      ctx.fillText(timestr, canvas.width / 2, canvas.height / 2);
+    });
 
     for (let i = 0; i < 10; i++) {
       velocityToPresure(pressure_temp, velocity_temp.texture);
@@ -116,14 +132,14 @@ async function initOGL() {
         pressure_temp.texture,
         velocity_temp.texture
       );
+
       advection(velocity_temp, velocity.texture, velocity.texture);
       advection(pressure_temp, pressure.texture, velocity.texture);
-      reactionDiffusion(pressure, pressure_temp.texture);
-      reactionDiffusion(pressure_temp, pressure.texture);
-      reactionDiffusion(pressure, pressure_temp.texture);
-    }
-    displayTexture(velocity, velocity_temp.texture, false);
 
+      reactionDiffusion(pressure, pressure_temp.texture, maskTexture);
+    }
+
+    displayTexture(velocity, velocity_temp.texture, false);
     displayTexture(null, pressure.texture, true);
     // displayTexture(null, velocity.texture, false);
   }
@@ -133,6 +149,7 @@ async function initOGL() {
 function destroy() {
   window.removeEventListener("resize", resize);
   appRoot.removeChild(gl.canvas);
+  alive = false;
 }
 
 onMounted(() => {

@@ -30,14 +30,19 @@ void main() {
 
     vec2 diffusion = (velocity_left + velocity_right + velocity_bottom + velocity_top) / 4.0 - velocity;
 
-    vec2 acceleration = gradient * 0.00001;
+    vec2 acceleration = -gradient * 0.01;
 
     // // surface tension?
     // float normalization_factor = sqrt(gradient.x * gradient.x + gradient.y * gradient.y + 1.0);
     // vec2 surface_tension = (gradient / normalization_factor) * (center + 1.0) * 1.0;
 
     // diffusion
-    velocity = velocity * 0.999 + acceleration / (center + 0.001) + diffusion + flow;
+    velocity = velocity * 0.9 + acceleration / (center + 0.001) + diffusion + flow * 0.1;
+
+    // clamp velocity
+
+    float magnitude = length(velocity);
+    velocity = velocity / max(1e-5, magnitude) * min(10.0, magnitude);
 
     gl_FragColor = packField(velocity);
 }

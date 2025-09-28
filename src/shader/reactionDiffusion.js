@@ -6,6 +6,7 @@ import fragment from './reactionDiffusion.frag'
 const shader = createShader(
     vertex, fragment, {
     pressureMap: { value: 0 },
+    maskTexture: { value: 0 },
     uSize: { value: [0, 0] }
 })
 
@@ -14,9 +15,9 @@ const shader = createShader(
  * @param {RenderTarget} target 
  * @param {Texture} pressureMap 
  */
-export default function (target, pressureMap) {
+export default function (target, pressureMap, maskTexture) {
     shader(target, {
-        pressureMap,
+        pressureMap, maskTexture,
         uSize: [target.width, target.height]
     })
 }
