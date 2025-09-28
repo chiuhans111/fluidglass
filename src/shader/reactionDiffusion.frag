@@ -27,11 +27,11 @@ void main() {
 
     vec4 laplacian = (left + right + bottom + top) * 0.2 + (corner1 + corner2 + corner3 + corner4) * 0.05 - center;
 
-    float feed = 0.065 + (vUv.x - 0.5) * 0.06;
+    float feed = 0.065 + (vUv.y - 0.5) * 0.06;
     float kill0 = 0.065 - 7.0 * (feed - 0.065) * (feed - 0.065);
 
     float r = length((vUv - 0.5) * uSize) / min(uSize.x, uSize.y);
-    float kill = kill0 - r * 0.05 + 0.025;
+    float kill = kill0 - r * 0.03 + 0.015;
 
     float mask = maskInput.r * 0.1;
 

@@ -18,7 +18,7 @@ void main() {
     float bottom = unpackFloat(texture2D(pressureMap, vUv + delta * vec2(0, -1)).rg);
     float top = unpackFloat(texture2D(pressureMap, vUv + delta * vec2(0, 1)).rg);
 
-    vec2 gradient = vec2(right - left, left - bottom);
+    vec2 gradient = vec2(right - left, top - bottom);
 
     vec2 velocity = unpackField(texture2D(velocityMap, vUv)) + gradient * 2.0;
 

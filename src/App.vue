@@ -11,6 +11,8 @@ import velocityCorrection from "./shader/velocityCorrection";
 import fluidVelocity from "./shader/fluidVelocity";
 import reactionDiffusion from "./shader/reactionDiffusion";
 import canvasRenderer from "./canvasRenderer";
+import glassShading from "./shader/glassShading";
+import backgroundClock from "./shader/backgroundClock";
 
 /**@type {HTMLElement} */
 let appRoot;
@@ -51,6 +53,7 @@ async function initOGL() {
   appRoot = document.getElementById("ogl-canvas-root");
   appRoot.appendChild(gl.canvas);
   let pressure = createRenderTarget();
+  let background = createRenderTarget();
   let pressure_temp = createRenderTarget(true);
   let velocity = createRenderTarget();
   let velocity_temp = createRenderTarget(true);
@@ -114,7 +117,8 @@ async function initOGL() {
       ctx.fillStyle = "red";
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.textAlign = "center";
-      ctx.font = "128px consolas";
+      ctx.textBaseline = "middle"
+      ctx.font = "256px Roboto Mono";
       const now = new Date();
       const timestr = [
         now.getHours().toString().padStart(2, "0"),
@@ -125,7 +129,7 @@ async function initOGL() {
       ctx.fillText(timestr, canvas.width / 2, canvas.height / 2);
     });
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 30; i++) {
       velocityToPresure(pressure_temp, velocity_temp.texture);
       velocityCorrection(
         velocity,
@@ -140,8 +144,14 @@ async function initOGL() {
     }
 
     displayTexture(velocity, velocity_temp.texture, false);
-    displayTexture(null, pressure.texture, true);
+    // displayTexture(null, pressure.texture, true);
     // displayTexture(null, velocity.texture, false);
+
+
+    backgroundClock(background);
+    glassShading(renderer, pressure.texture, background.texture);
+    // displayTexture(null, background.texture, false);
+
   }
   requestAnimationFrame(update);
 }

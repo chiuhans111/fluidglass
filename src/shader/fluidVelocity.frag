@@ -37,7 +37,7 @@ void main() {
     // vec2 surface_tension = (gradient / normalization_factor) * (center + 1.0) * 1.0;
 
     // diffusion
-    velocity = velocity * 0.9 + acceleration / (center + 0.001) + diffusion + flow * 0.1;
+    velocity = velocity * 0.99 * min(1.0, center * 0.9 + 0.1) + acceleration / (center + 0.001) + diffusion + flow * 0.1;
 
     // clamp velocity
 
