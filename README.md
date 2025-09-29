@@ -1,6 +1,13 @@
-# fluidglass
+# Fluid Glass
 
-This template should help get you started developing with Vue 3 in Vite.
+This is liquid fluid glass.
+
+**Key ingredients:**
+- Reaction Diffusion Equation
+- Navier-Stokes Equation
+- Glass Shader
+
+WebGL Framework: https://github.com/oframe/ogl
 
 ## Example Customization URL
 
