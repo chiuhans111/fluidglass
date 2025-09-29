@@ -15,6 +15,10 @@ import glassShading from "./shader/glassShading";
 import backgroundClock from "./shader/backgroundClock";
 import { getUrlParam } from "./getUrlParam";
 
+import useParallax from "./parallax";
+
+const { parallax } = useParallax();
+
 /**@type {HTMLElement} */
 let appRoot;
 /**@type {Flowmap} */
@@ -127,6 +131,8 @@ function touchmove(e) {
   touchmove.prev.y = touch.clientY;
 }
 
+// Main setup
+
 let alive = true;
 async function initOGL() {
   appRoot = document.getElementById("ogl-canvas-root");
@@ -215,9 +221,11 @@ async function initOGL() {
     }
 
     displayTexture(velocity, velocity_temp.texture, false);
-
-    backgroundClock(background);
-    glassShading(renderer, pressure.texture, background.texture);
+    backgroundClock(background, [parallax.value.x, parallax.value.y]);
+    glassShading(renderer, pressure.texture, background.texture, [
+      parallax.value.x,
+      parallax.value.y,
+    ]);
 
     if (FLAG_debug == "velocity") {
       displayTexture(renderer, velocity.texture, false);
@@ -236,7 +244,7 @@ function destroy() {
   // remove listener
   window.removeEventListener("resize", resize);
   window.removeEventListener("touchmove", touchmove);
-  window.addEventListener("mousemove", mousemove);
+  window.removeEventListener("mousemove", mousemove);
   appRoot.removeChild(gl.canvas);
   alive = false;
 }

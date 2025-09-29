@@ -10,6 +10,8 @@ uniform vec3 circlecolor1;
 uniform vec3 circlecolor2;
 uniform vec3 circlecolor3;
 
+uniform vec2 parallax;
+
 #include ./util.glsl
 
 vec3 drawCircle(vec2 coord, float t) {
@@ -33,16 +35,16 @@ void main() {
 
     for(int i = 0; i < 1; i++) {
         for(int j = 0; j < 1; j++) {
-            vec2 coord = (vUv - 0.5) * uSize + vec2(i, j) / 2.0;
+            vec2 coord = (vUv - 0.5) * uSize + vec2(i, j) / 2.0 + parallax * 2.0;
             float radius = length(coord) / min(uSize.x, uSize.y);
             float clock = atan(coord.y, coord.x);
             float tick = fract(0.25 - clock / PI / 2.0);
             // vec3 hands = 1.0 / (abs(fract((tick - clockHands / vec3(12.0, 60.0, 60.0)) + 0.5) - 0.5) * 100.0 + 1.0);
 
             vec3 circle3 = drawCircle(coord, clockHands.z / 60.0);
-            coord += circle3.xy * 0.1;
+            coord += circle3.xy * 0.1 + parallax * 10.0;
             vec3 circle2 = drawCircle(coord, clockHands.y / 60.0);
-            coord += circle2.xy * 0.1;
+            coord += circle2.xy * 0.1 + parallax * 20.0;
             vec3 circle1 = drawCircle(coord, clockHands.x / 12.0);
 
             vec3 color = bgcolor;

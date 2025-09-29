@@ -11,6 +11,7 @@ const FLAG_color3 = getUrlParam("color3", [0.9607843137254902, 0.960784313725490
 
 const shader = createShader(vertex, fragment, {
     uSize: { value: [0, 0] },
+    parallax: { value: [0, 0] },
     clockHands: { value: [0, 0, 0] },
     bgcolor: { value: FLAG_bgcolor },
     circlecolor1: { value: FLAG_color1 },
@@ -18,9 +19,10 @@ const shader = createShader(vertex, fragment, {
     circlecolor3: { value: FLAG_color3 }
 })
 
-export default function (target) {
+export default function (target, parallax) {
     const now = new Date()
     shader(target, {
+        parallax,
         uSize: [target.width, target.height],
         clockHands: [
             now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 60 / 60,

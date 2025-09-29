@@ -15,7 +15,8 @@ const shader = createShader(
     uSize: { value: [0, 0] },
     glassColor: { value: FLAG_color },
     shadowFactor: { value: FLAG_shadow },
-    brightFactor: { value: FLAG_bright }
+    brightFactor: { value: FLAG_bright },
+    parallax: { value: [0, 0] }
 })
 
 /**
@@ -24,9 +25,9 @@ const shader = createShader(
  * @param {Texture} pressureMap 
  * @param {Texture} backgroundMap 
  */
-export default function (target, pressureMap, backgroundMap) {
+export default function (target, pressureMap, backgroundMap, parallax) {
     shader(target, {
-        pressureMap, backgroundMap,
+        pressureMap, backgroundMap, parallax,
         uSize: [pressureMap.width, pressureMap.height]
     })
 }
