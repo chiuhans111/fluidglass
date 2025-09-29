@@ -3,6 +3,7 @@ import { createShader } from "../createShader";
 import vertex from './default.vert'
 import fragment from './reactionDiffusion.frag'
 import { getUrlParam } from "@/getUrlParam";
+
 const FLAG_feed = getUrlParam("feed", 0.0540, Number);
 const FLAG_kill = getUrlParam("kill", 0.0616, Number);
 

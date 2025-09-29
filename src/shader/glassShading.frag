@@ -4,6 +4,9 @@ varying vec2 vUv;
 
 uniform sampler2D pressureMap;
 uniform sampler2D backgroundMap;
+uniform vec3 glassColor;
+uniform float shadowFactor;
+uniform float brightFactor;
 
 uniform vec2 uSize;
 #include ./util.glsl
@@ -49,7 +52,7 @@ void main() {
             vec4 bottom = texture2D(pressureMap, uv + delta * vec2(0, -1));
             vec4 top = texture2D(pressureMap, uv + delta * vec2(0, 1));
 
-            vec2 gradient = vec2(thickness(right) - thickness(left), thickness(top) - thickness(bottom))*0.7;
+            vec2 gradient = vec2(thickness(right) - thickness(left), thickness(top) - thickness(bottom)) * 0.7;
 
             vec3 normal = vec3(-gradient.x, -gradient.y, 1.0);
             normal = normal / length(normal);
@@ -74,9 +77,10 @@ void main() {
 
             float R = pow(1.0 - dot(incoming, normal), 0.5) * thickness(center);
 
-            float shadow = thickness(texture2D(pressureMap, vUv + delta * vec2(0, 0)));
-            vec4 color = background_R * R + background_T * (1.0 - R) + (shadow * 0.05);
+            float t = thickness(center);
 
+            vec4 color = background_R * R + background_T * (1.0 - R) * (1.0 - shadowFactor * t) + (t * brightFactor);
+            color.rgb = color.rgb * mix(vec3(1), glassColor, t);
             final_color = final_color + color * 0.25;
         }
     }

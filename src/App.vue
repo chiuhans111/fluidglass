@@ -100,8 +100,8 @@ function mousemove(e) {
   const rect = appRoot.getBoundingClientRect();
   flowmap.mouse.set((e.x - 0) / rect.width, (rect.bottom - e.y) / rect.height);
   flowmap.velocity.set(
-    (e.movementX / rect.width) * simulation_size[0] * 0.5,
-    (e.movementY / rect.width) * simulation_size[1] * 0.5
+    (e.movementX / rect.width) * simulation_size[0],
+    (e.movementY / rect.width) * simulation_size[1]
   );
 }
 
@@ -117,10 +117,8 @@ function touchmove(e) {
   // Approximate movement by comparing with previous position
   if (!touchmove.prev) touchmove.prev = { x: touch.clientX, y: touch.clientY };
   flowmap.velocity.set(
-    ((touch.clientX - touchmove.prev.x) / rect.width) *
-      simulation_size[0] *
-      0.5,
-    ((touch.clientY - touchmove.prev.y) / rect.width) * simulation_size[1] * 0.5
+    ((touch.clientX - touchmove.prev.x) / rect.width) * simulation_size[0],
+    ((touch.clientY - touchmove.prev.y) / rect.width) * simulation_size[1]
   );
   touchmove.prev.x = touch.clientX;
   touchmove.prev.y = touch.clientY;
