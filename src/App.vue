@@ -13,12 +13,16 @@ import reactionDiffusion from "./shader/reactionDiffusion";
 import canvasRenderer from "./canvasRenderer";
 import glassShading from "./shader/glassShading";
 import backgroundClock from "./shader/backgroundClock";
+import { getUrlParam } from "./getUrlParam";
 
 /**@type {HTMLElement} */
-let appRoot;
+let appRoot, flowmap;
 
 const renderTargets = [];
 const renderTargets_delayed_set_size = [];
+
+const FLAG_debug = getUrlParam("debug", null, String);
+const FLAG_iteration = getUrlParam("iteration", 10, Number);
 
 function createRenderTarget(delayed_set_size = false) {
   const target = new RenderTarget(gl, {
@@ -41,6 +45,8 @@ function createRenderTarget(delayed_set_size = false) {
 }
 
 let set_size_needed = true;
+let simulation_size = [512, 512];
+
 // Listeners
 function resize() {
   const rect = appRoot.getBoundingClientRect();
@@ -56,7 +62,7 @@ function renderForeground(canvas, ctx) {
 
   const now = new Date();
   if (canvas.width > canvas.height * 1.5) {
-    const size = canvas.width / 6;
+    const size = canvas.width / 8;
     ctx.font = Math.round(size) + "px Roboto Mono";
 
     const timestr = [
@@ -87,60 +93,64 @@ function renderForeground(canvas, ctx) {
   }
 }
 
+/**
+ * @param {MouseEvent} e
+ */
+function mousemove(e) {
+  const rect = appRoot.getBoundingClientRect();
+  flowmap.mouse.set((e.x - 0) / rect.width, (rect.bottom - e.y) / rect.height);
+  flowmap.velocity.set(
+    (e.movementX / rect.width) * simulation_size[0] * 0.5,
+    (e.movementY / rect.width) * simulation_size[1] * 0.5
+  );
+}
+
+function touchmove(e) {
+  if (!e.touches || e.touches.length === 0) return;
+  const touch = e.touches[0];
+  const rect = appRoot.getBoundingClientRect();
+  e.preventDefault();
+  flowmap.mouse.set(
+    (touch.clientX - 0) / rect.width,
+    (rect.bottom - touch.clientY) / rect.height
+  );
+  // Approximate movement by comparing with previous position
+  if (!touchmove.prev) touchmove.prev = { x: touch.clientX, y: touch.clientY };
+  flowmap.velocity.set(
+    ((touch.clientX - touchmove.prev.x) / rect.width) *
+      simulation_size[0] *
+      0.5,
+    ((touch.clientY - touchmove.prev.y) / rect.width) * simulation_size[1] * 0.5
+  );
+  touchmove.prev.x = touch.clientX;
+  touchmove.prev.y = touch.clientY;
+}
+
 let alive = true;
 async function initOGL() {
   appRoot = document.getElementById("ogl-canvas-root");
   appRoot.appendChild(gl.canvas);
+  renderer.setSize(window.innerWidth, window.innerHeight);
   let pressure = createRenderTarget();
   let background = createRenderTarget();
   let pressure_temp = createRenderTarget(true);
   let velocity = createRenderTarget();
   let velocity_temp = createRenderTarget(true);
 
-  const flowmap = new Flowmap(gl, {
+  flowmap = new Flowmap(gl, {
     size: 512,
-    falloff: 0.1,
-    alpha: 1,
-    dissipation: 0.5,
+    falloff: 0.12,
+    alpha: 0.8,
+    dissipation: 0.7,
   });
 
+  // register listener
   window.addEventListener("resize", resize);
-
-  /**
-   * @param {MouseEvent} e
-   */
-  function mousemove(e) {
-    const rect = appRoot.getBoundingClientRect();
-    flowmap.mouse.set(
-      (e.x - 0) / rect.width,
-      (rect.bottom - e.y) / rect.height
-    );
-    flowmap.velocity.set(e.movementX, e.movementY);
-  }
-
-  function touchmove(e) {
-    if (!e.touches || e.touches.length === 0) return;
-    const touch = e.touches[0];
-    const rect = appRoot.getBoundingClientRect();
-    e.preventDefault();
-    flowmap.mouse.set(
-      (touch.clientX - 0) / rect.width,
-      (rect.bottom - touch.clientY) / rect.height
-    );
-    // Approximate movement by comparing with previous position
-    if (!touchmove.prev)
-      touchmove.prev = { x: touch.clientX, y: touch.clientY };
-    flowmap.velocity.set(
-      (touch.clientX - touchmove.prev.x) * window.devicePixelRatio,
-      (touch.clientY - touchmove.prev.y) * window.devicePixelRatio
-    );
-    touchmove.prev.x = touch.clientX;
-    touchmove.prev.y = touch.clientY;
-  }
-  window.addEventListener("touchmove", touchmove, { passive: false });
-
-  window.addEventListener("mousemove", mousemove);
   resize();
+
+  window.addEventListener("touchmove", touchmove, { passive: false });
+  window.addEventListener("mousemove", mousemove);
+
   // Main initialization
   initializePressure(pressure);
 
@@ -148,6 +158,7 @@ async function initOGL() {
   function update(t) {
     if (alive) requestAnimationFrame(update);
     flowmap.update();
+    flowmap.velocity.set(0, 0);
     // displayTexture(null, flowmap.mask);
     // return
 
@@ -156,13 +167,15 @@ async function initOGL() {
       displayTexture(pressure_temp, pressure.texture, false);
       displayTexture(velocity_temp, velocity.texture, false);
 
-      const scale = Math.min(
-        1.0,
-        1024 / Math.max(renderer.width, renderer.height)
+      const scale = Math.max(
+        0.4,
+        Math.min(0.8, 1024 / Math.min(renderer.width, renderer.height))
       );
 
-      const width = Math.round(renderer.width * scale);
-      const height = Math.round(renderer.height * scale);
+      const width = Math.round((renderer.width * scale) / 4) * 4;
+      const height = Math.round((renderer.height * scale) / 4) * 4;
+
+      simulation_size = [width, height];
 
       for (let target of renderTargets) target.setSize(width, height);
 
@@ -182,7 +195,7 @@ async function initOGL() {
 
     const maskTexture = canvasRenderer(renderer, renderForeground);
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < FLAG_iteration; i++) {
       velocityToPresure(pressure_temp, velocity_temp.texture);
       velocityCorrection(
         velocity,
@@ -197,18 +210,28 @@ async function initOGL() {
     }
 
     displayTexture(velocity, velocity_temp.texture, false);
-    // displayTexture(null, pressure.texture, true);
-    // displayTexture(null, velocity.texture, false);
 
     backgroundClock(background);
     glassShading(renderer, pressure.texture, background.texture);
-    // displayTexture(null, background.texture, false);
+
+    if (FLAG_debug == "velocity") {
+      displayTexture(renderer, velocity.texture, false);
+    } else if (FLAG_debug == "pressure") {
+      displayTexture(renderer, pressure.texture, false);
+    } else if (FLAG_debug == "background") {
+      displayTexture(renderer, background.texture, false);
+    } else if (FLAG_debug == "flowmap") {
+      displayTexture(null, flowmap.mask.read.texture, false);
+    }
   }
   requestAnimationFrame(update);
 }
 
 function destroy() {
+  // remove listener
   window.removeEventListener("resize", resize);
+  window.removeEventListener("touchmove", touchmove);
+  window.addEventListener("mousemove", mousemove);
   appRoot.removeChild(gl.canvas);
   alive = false;
 }

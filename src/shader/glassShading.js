@@ -19,6 +19,6 @@ const shader = createShader(
 export default function (target, pressureMap, backgroundMap) {
     shader(target, {
         pressureMap, backgroundMap,
-        uSize: [target.width, target.height]
+        uSize: [pressureMap.width, pressureMap.height]
     })
 }

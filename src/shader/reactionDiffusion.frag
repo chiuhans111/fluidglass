@@ -5,6 +5,9 @@ varying vec2 vUv;
 uniform sampler2D pressureMap;
 uniform sampler2D maskTexture;
 
+uniform float feed0; // 0.0540
+uniform float kill0; // 0.0616
+
 uniform vec2 uSize;
 #include ./util.glsl
 
@@ -30,11 +33,11 @@ void main() {
 
     vec4 laplacian = (left + right + bottom + top) * 0.2 + (corner1 + corner2 + corner3 + corner4) * 0.05 - center;
 
-    float feed = 0.0540 + (vUv.x - 0.5) * 0.02;
-    float kill0 = 0.065 - 7.0 * (feed - 0.065) * (feed - 0.065);
+    float feed = feed0 + (vUv.x - 0.5) * 0.02;
+    float kill_compensated = kill0 - 7.0 * ((feed - 0.065) * (feed - 0.065) - (feed0 - 0.065) * (feed0 - 0.065));
 
     float r = length((vUv - 0.5) * uSize) / min(uSize.x, uSize.y);
-    float kill = kill0 + abs(vUv.y - 0.5) * 0.05 - 0.003;
+    float kill = kill_compensated + abs(vUv.y - 0.5) * 0.04;
 
     float mask = maskInput.r * 0.1;
 

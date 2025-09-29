@@ -29,7 +29,8 @@ vec3 my_refraction(vec3 normal, vec3 incoming, float n2) {
 }
 
 float thickness(vec4 p) {
-    return smoothstep(0.4, 0.95, p.a);
+    float t = smoothstep(0.45, 0.95, p.a);
+    return sqrt(t);
 }
 
 void main() {
@@ -48,7 +49,7 @@ void main() {
             vec4 bottom = texture2D(pressureMap, uv + delta * vec2(0, -1));
             vec4 top = texture2D(pressureMap, uv + delta * vec2(0, 1));
 
-            vec2 gradient = vec2(thickness(right) - thickness(left), thickness(top) - thickness(bottom));
+            vec2 gradient = vec2(thickness(right) - thickness(left), thickness(top) - thickness(bottom))*0.7;
 
             vec3 normal = vec3(-gradient.x, -gradient.y, 1.0);
             normal = normal / length(normal);
@@ -74,7 +75,7 @@ void main() {
             float R = pow(1.0 - dot(incoming, normal), 0.5) * thickness(center);
 
             float shadow = thickness(texture2D(pressureMap, vUv + delta * vec2(0, 0)));
-            vec4 color = background_R * R + background_T * (1.0 - R) + ( shadow * 0.05);
+            vec4 color = background_R * R + background_T * (1.0 - R) + (shadow * 0.05);
 
             final_color = final_color + color * 0.25;
         }

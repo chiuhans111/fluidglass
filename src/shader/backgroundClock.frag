@@ -5,16 +5,24 @@ varying vec2 vUv;
 uniform vec2 uSize;
 uniform vec3 clockHands;
 
+uniform vec3 bgcolor;
+uniform vec3 circlecolor1;
+uniform vec3 circlecolor2;
+uniform vec3 circlecolor3;
+
 #include ./util.glsl
 
 vec3 drawCircle(vec2 coord, float t) {
     float radius = max(uSize.x, uSize.y) * 0.5;
-    vec2 origin = vec2(cos(t * PI * 2.0), sin(t * PI * 2.0)) * radius;
+    vec2 origin = vec2(sin(t * PI * 2.0), cos(t * PI * 2.0)) * radius;
     coord -= origin;
-    float r = length(coord) / radius;
-    float f = 1.0 / (abs(r - 1.0) * 200.0 + 1.0);
 
-    vec2 displacement = -coord * f * step(r, 1.0);
+    float r = length(coord) / radius;
+    float f = 1.0 / (abs(r - 1.0) * 100.0 + 1.0);
+
+    vec2 displacement = -coord / (sqrt(max(0.0, 1.0 - r * r)) + 0.01) * f * step(r, 1.0);
+
+    f = 1.0 / (abs(r - 1.0) * 200.0 + 1.0);
     f = f + step(r, 1.0) * 0.05 * (r + 1.0);
 
     return vec3(displacement, f);
@@ -37,10 +45,10 @@ void main() {
             coord += circle2.xy * 0.1;
             vec3 circle1 = drawCircle(coord, clockHands.x / 12.0);
 
-            vec3 color = vec3(0.0);
-            color = mix(color, vec3(0.9686274509803922, 0.49411764705882355, 0.17647058823529413), circle1.z);
-            color = mix(color, vec3(00.19607843137254902, 0.21568627450980393, 0.2901960784313726), circle2.z);
-            color = mix(color, vec3(0.9607843137254902, 0.9607843137254902, 0.9607843137254902), circle3.z);
+            vec3 color = bgcolor;
+            color = mix(color, circlecolor1, circle1.z);
+            color = mix(color, circlecolor2, circle2.z);
+            color = mix(color, circlecolor3, circle3.z);
 
             final_color = final_color + color;
 
