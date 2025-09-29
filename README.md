@@ -3,7 +3,14 @@
 This template should help get you started developing with Vue 3 in Vite.
 
 ## Example Customization URL
-https://chiuhans111.github.io/fluidglass/?color=ffeeee&color1=ff3007&color2=ffffff&color3=77bbcc&bgcolor=ffeeff&shadow=0.2&bright=0.1&feed=0.1&kill=0.054&iteration=15
+
+Default:
+
+https://chiuhans111.github.io/fluidglass?color=ffffff&color1=32374A&color2=F77E2D&color3=F5F5F5&bgcolor=000000&shadow=0.05&bright=0.05&feed=0.054&kill=0.0616&iteration=10
+
+Customized:
+
+https://chiuhans111.github.io/fluidglass/?color=ffeeee&color1=ff3007&color2=ffffff&color3=77bbcc&bgcolor=ffeeff&shadow=0.1&bright=0.1&feed=0.1&kill=0.054&iteration=15
 
 ## Recommended IDE Setup
 
