@@ -72,8 +72,9 @@ void main() {
             vec4 background_T = vec4(r_r, r_g, r_b, 1.0);
 
             float light = abs(dot(reflected, vec3(-0.1, 0.6, 0.01)));
-            light = step(0.1, light) * light * 30.0;
-            vec4 background_R = vec4(vec3(light), 0);
+            light = step(0.1, light) * light * 20.0;
+
+            vec4 background_R = vec4(vec3(light), 0) * vec4(glassColor, 1.0);
 
             float R = pow(1.0 - dot(incoming, normal), 0.5) * thickness(center);
 

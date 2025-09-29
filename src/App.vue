@@ -16,7 +16,9 @@ import backgroundClock from "./shader/backgroundClock";
 import { getUrlParam } from "./getUrlParam";
 
 /**@type {HTMLElement} */
-let appRoot, flowmap;
+let appRoot;
+/**@type {Flowmap} */
+let flowmap;
 
 const renderTargets = [];
 const renderTargets_delayed_set_size = [];
@@ -34,6 +36,7 @@ function createRenderTarget(delayed_set_size = false) {
     depth: false,
     wrapS: gl.CLAMP_TO_EDGE,
     wrapT: gl.CLAMP_TO_EDGE,
+    // wrapT: gl.CLAMP_TO_EDGE,
     // wrapT: gl.REPEAT,
   });
   if (delayed_set_size) {
@@ -167,7 +170,11 @@ async function initOGL() {
 
       const scale = Math.max(
         0.4,
-        Math.min(0.8, 1024 / Math.min(renderer.width, renderer.height))
+        Math.min(
+          0.8,
+          (1024 / Math.min(renderer.width, renderer.height)) *
+            window.devicePixelRatio
+        )
       );
 
       const width = Math.round((renderer.width * scale) / 4) * 4;
@@ -215,7 +222,7 @@ async function initOGL() {
     if (FLAG_debug == "velocity") {
       displayTexture(renderer, velocity.texture, false);
     } else if (FLAG_debug == "pressure") {
-      displayTexture(renderer, pressure.texture, false);
+      displayTexture(renderer, pressure.texture, true);
     } else if (FLAG_debug == "background") {
       displayTexture(renderer, background.texture, false);
     } else if (FLAG_debug == "flowmap") {
