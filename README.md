@@ -10,13 +10,13 @@ https://chiuhans111.github.io/fluidglass?color=ffffff&color1=32374A&color2=F77E2
 
 Customized:
 
-Pink:
+Sticky Pink:
 
 https://chiuhans111.github.io/fluidglass/?color=ffeeee&color1=ff3007&color2=ffffff&color3=77bbcc&bgcolor=ffeeff&shadow=0.1&bright=0.1&feed=0.1&kill=0.054&iteration=15
 
-Pomelo:
+Cozzy Blue:
 
-https://chiuhans111.github.io/fluidglass/?color=dceaec&color1=ffaa07&color2=ffffff&color3=77bbcc&bgcolor=eefeff&shadow=0.1&bright=0.1&feed=0.05&kill=0.06&iteration=15
+https://chiuhans111.github.io/fluidglass/?color=dceaec&color1=ffaa07&color2=ffffff&color3=77bbcc&bgcolor=edefef&shadow=0.05&bright=0.1&feed=0.05&kill=0.06&iteration=15
 
 ## Recommended IDE Setup
 
