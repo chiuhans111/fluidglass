@@ -77,7 +77,7 @@ void main() {
             vec4 background_T = vec4(r_r, r_g, r_b, 1.0);
 
             vec3 incoming_clamped = incoming;
-            incoming_clamped.z = clamp(incoming_clamped.z, 0.8, 0.99);
+            incoming_clamped.z = clamp(incoming_clamped.z, 0.8, 1.0);
             incoming_clamped.xy /= max(length(incoming_clamped.xy), 0.0001);
             incoming_clamped.xy *= sqrt(1.0 - incoming_clamped.z);
             vec3 reflected_clamped = my_reflection(normal, incoming_clamped);
