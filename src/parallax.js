@@ -62,12 +62,12 @@ function updateParallax() {
 
         matNatural.inverse().multiply(mat)
 
-        console.log(matNatural[0], matNatural[1], matNatural[2])
-        console.log(matNatural[3], matNatural[4], matNatural[5])
-        console.log(matNatural[6], matNatural[7], matNatural[8])
+        // console.log(matNatural[0], matNatural[1], matNatural[2])
+        // console.log(matNatural[3], matNatural[4], matNatural[5])
+        // console.log(matNatural[6], matNatural[7], matNatural[8])
 
         parallax.value.x = matNatural[1] / Math.max(matNatural[0], 0.1)
-        parallax.value.y = matNatural[2] / Math.max(matNatural[0], 0.1)
+        parallax.value.y = -matNatural[2] / Math.max(matNatural[0], 0.1)
 
 
         console.log(parallax.value)
