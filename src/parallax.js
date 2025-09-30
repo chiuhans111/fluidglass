@@ -67,7 +67,7 @@ function updateParallax() {
         // console.log(matNatural[6], matNatural[7], matNatural[8])
 
         parallax.value.x = matNatural[1] / Math.max(matNatural[0], 0.1)
-        parallax.value.y = -matNatural[2] / Math.max(matNatural[0], 0.1)
+        parallax.value.y = matNatural[2] / Math.max(matNatural[0], 0.1)
 
 
         console.log(parallax.value)
